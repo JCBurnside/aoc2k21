@@ -14,7 +14,7 @@
             "cwd": "${fileDirname}",
             "environment": [],
             "console": "externalTerminal",
-            "preLaunchTask": "Rust: cargo build - aoc2k21"
+            "preLaunchTask": "build"
         }
     ]
 }
