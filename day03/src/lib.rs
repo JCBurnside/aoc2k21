@@ -31,24 +31,22 @@ fn part1<const BITS: u32>(data: &[u32]) -> u32 {
     gamma * epislon
 }
 
-fn split_by_bit_pos(data:Vec<u32>,bit_pos:u32) -> (Vec<u32>,Vec<u32>) {
+fn split_by_bit_pos(data: Vec<u32>, bit_pos: u32) -> (Vec<u32>, Vec<u32>) {
     let mask = 1 << bit_pos;
     (
-        data
-            .iter()
+        data.iter()
             .copied()
             .filter(|num| num & mask == mask)
             .collect(),
-        data
-            .iter()
+        data.iter()
             .copied()
             .filter(|num| num & mask != mask)
-            .collect()
+            .collect(),
     )
 }
 
 fn part2<const BITS: u32>(data: &[u32]) -> u32 {
-    let most_sig_mask = 1u32 << BITS-1;
+    let most_sig_mask = 1u32 << BITS - 1;
     let (leading1, leading0): (Vec<_>, Vec<_>) = (
         data.iter()
             .copied()
@@ -67,15 +65,23 @@ fn part2<const BITS: u32>(data: &[u32]) -> u32 {
     };
     let mut bit = BITS - 2;
     while o2gen_rating_canidates.len() > 1 {
-        let(ones,zeros) = split_by_bit_pos(o2gen_rating_canidates, bit);
-        o2gen_rating_canidates = if ones.len() >= zeros.len() { ones } else { zeros };
+        let (ones, zeros) = split_by_bit_pos(o2gen_rating_canidates, bit);
+        o2gen_rating_canidates = if ones.len() >= zeros.len() {
+            ones
+        } else {
+            zeros
+        };
         bit = bit.saturating_sub(1);
     }
 
     let mut bit = BITS - 2;
     while co2scrub_rating_canidates.len() > 1 {
-        let(ones,zeros) = split_by_bit_pos(co2scrub_rating_canidates, bit);
-        co2scrub_rating_canidates = if zeros.len() <= ones.len() { zeros } else { ones }; 
+        let (ones, zeros) = split_by_bit_pos(co2scrub_rating_canidates, bit);
+        co2scrub_rating_canidates = if zeros.len() <= ones.len() {
+            zeros
+        } else {
+            ones
+        };
         bit = bit.saturating_sub(1);
     }
     let o2 = o2gen_rating_canidates.first().unwrap();
