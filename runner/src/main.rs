@@ -4,4 +4,5 @@ fn main() {
     day03::run();
     day04::run();
     day05::run();
+    day06::run();
 }
