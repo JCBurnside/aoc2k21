@@ -10,7 +10,7 @@ fn transpose<T: Copy, const DX: usize, const DY: usize>(data: [[T; DX]; DY]) -> 
     output.map(|row| row.map(|it| unsafe { it.assume_init() }))
 }
 
-#[derive(Clone,Copy)]
+#[derive(Clone, Copy)]
 struct Board {
     data: [[u8; 5]; 5],
     marked: [[bool; 5]; 5],
@@ -41,7 +41,6 @@ impl Board {
         self.marked.iter().any(|row| row.iter().all(|it| *it)) ||
         //check cols
         transpose(self.marked).iter().any(|row| row.iter().all(|it|*it))
-
     }
 }
 
@@ -51,7 +50,7 @@ fn parse(input: &str) -> (Vec<u8>, Vec<Board>) {
     let mut boards = vec![];
     let mut current_board = [[None; 5]; 5];
     let mut current_row = 0;
-    lines.next();//skip first blank line
+    lines.next(); //skip first blank line
     for line in lines {
         if line.is_empty() {
             if current_row != 5 {
@@ -98,7 +97,6 @@ fn part1(calls: &[u8], mut boards: Vec<Board>) -> u32 {
             board.mark(*call);
         }
         if let Some(winner) = boards.iter().find(|board| board.check_bingo()) {
-            
             let sum_of_unmarked = winner
                 .data
                 .iter()
@@ -106,51 +104,56 @@ fn part1(calls: &[u8], mut boards: Vec<Board>) -> u32 {
                 .zip(winner.marked.iter().flatten())
                 .filter_map(|(num, mark)| if !mark { Some(num) } else { None })
                 .fold(0u32, |lhs, rhs| lhs + (*rhs as u32));
-            return sum_of_unmarked * (*call as u32)
+            return sum_of_unmarked * (*call as u32);
         }
     }
     panic!("no winners?");
 }
 
-fn part2(calls: &[u8],mut boards : Vec<Board>) -> u32 {
-    let mut final_winner= MaybeUninit::uninit();
+fn part2(calls: &[u8], mut boards: Vec<Board>) -> u32 {
+    let mut final_winner = MaybeUninit::uninit();
     let mut final_call = 0;
     for call in calls {
         for board in boards.iter_mut() {
             board.mark(*call);
         }
         let mut to_remove = Vec::new();
-        for (pos,winner) in boards.iter().enumerate().filter(|(_,board)| board.check_bingo()) {
+        for (pos, winner) in boards
+            .iter()
+            .enumerate()
+            .filter(|(_, board)| board.check_bingo())
+        {
             to_remove.push(pos);
             final_winner.write(winner.clone());
             final_call = call.clone();
         }
 
-        for (idx,pos) in to_remove.iter().enumerate() {
+        for (idx, pos) in to_remove.iter().enumerate() {
             boards.remove(*pos - idx);
         }
     }
     let final_winner = unsafe { final_winner.assume_init() };
     let sum_of_unmarked = final_winner
-                .data
-                .iter()
-                .flatten()
-                .zip(final_winner.marked.iter().flatten())
-                .filter_map(|(num, mark)| if !mark { Some(num) } else { None })
-                .fold(0u32, |lhs, rhs| lhs + (*rhs as u32));
+        .data
+        .iter()
+        .flatten()
+        .zip(final_winner.marked.iter().flatten())
+        .filter_map(|(num, mark)| if !mark { Some(num) } else { None })
+        .fold(0u32, |lhs, rhs| lhs + (*rhs as u32));
     sum_of_unmarked * (final_call as u32)
 }
 
 pub fn run() {
     println!("day 04:");
-    let (calls,boards) = parse(include_str!("input.txt"));
-    println!("part 1: {}", part1(&calls,boards.clone()));
-    println!("part 2: {}", part2(&calls,boards));
+    let (calls, boards) = parse(include_str!("input.txt"));
+    println!("part 1: {}", part1(&calls, boards.clone()));
+    println!("part 2: {}", part2(&calls, boards));
 }
 
 #[cfg(test)]
 mod tests {
-    const TEST : &'static str = "7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1
+    const TEST: &'static str =
+        "7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1
 
 22 13 17 11  0
 8  2 23  4 24
@@ -171,13 +174,13 @@ mod tests {
 2  0 12  3  7";
     #[test]
     fn part1() {
-        let (calls,boards) = super::parse(TEST);
-        assert_eq!(4512,super::part1(&calls,boards));
+        let (calls, boards) = super::parse(TEST);
+        assert_eq!(4512, super::part1(&calls, boards));
     }
 
     #[test]
     fn part2() {
         let (calls, boards) = super::parse(TEST);
-        assert_eq!(1924,super::part2(&calls,boards));
+        assert_eq!(1924, super::part2(&calls, boards));
     }
 }

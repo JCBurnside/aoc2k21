@@ -45,8 +45,8 @@ fn split_by_bit_pos(data: Vec<u32>, bit_pos: u32) -> (Vec<u32>, Vec<u32>) {
     )
 }
 
-fn part2<const BITS: u32>(data: &[u32]) -> u32 {
-    let most_sig_mask = 1u32 << BITS - 1;
+fn part2<const BITS: u32>(data: &[u32]) -> (u32, u32, u32) {
+    let most_sig_mask = 1 << BITS - 1;
     let (leading1, leading0): (Vec<_>, Vec<_>) = (
         data.iter()
             .copied()
@@ -77,23 +77,23 @@ fn part2<const BITS: u32>(data: &[u32]) -> u32 {
     let mut bit = BITS - 2;
     while co2scrub_rating_canidates.len() > 1 {
         let (ones, zeros) = split_by_bit_pos(co2scrub_rating_canidates, bit);
-        co2scrub_rating_canidates = if zeros.len() <= ones.len() {
-            zeros
-        } else {
+        co2scrub_rating_canidates = if ones.len() < zeros.len() {
             ones
+        } else {
+            zeros
         };
         bit = bit.saturating_sub(1);
     }
     let o2 = o2gen_rating_canidates.first().unwrap();
     let co2 = co2scrub_rating_canidates.first().unwrap();
-    o2 * co2
+    (o2 * co2, *o2, *co2)
 }
 
 pub fn run() {
     println!("day 03:");
     let data = parse(include_str!("input.txt"));
     println!("part 1: {}", part1::<12>(&data));
-    println!("part 2: {}", part2::<12>(&data));
+    println!("part 2: {:?}", part2::<12>(&data));
 }
 
 #[cfg(test)]
@@ -119,6 +119,6 @@ mod tests {
     #[test]
     fn part2() {
         let data = super::parse(TEST);
-        assert_eq!(230, super::part2::<5>(&data));
+        assert_eq!((230, 23, 10), super::part2::<5>(&data));
     }
 }
