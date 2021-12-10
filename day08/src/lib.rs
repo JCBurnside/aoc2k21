@@ -89,9 +89,7 @@ impl DisplaySignalMap {
         digits
             .split_ascii_whitespace()
             .map(|seg| seg.chars().sorted().collect::<String>())
-            .map(|seg| self.map.iter().position(|m| 
-                m == &seg
-            ).unwrap())
+            .map(|seg| self.map.iter().position(|m| m == &seg).unwrap())
             .rev()
             .enumerate()
             .map(|(pos, value)| value as u32 * 10u32.pow(pos as u32))
