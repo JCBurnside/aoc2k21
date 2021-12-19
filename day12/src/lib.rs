@@ -40,25 +40,25 @@ fn parse(input : &'static str) -> Cave {
     Cave { paths }
 }
 
-fn recursive_search(paths:&HashMap<CavePoint,Vec<CavePoint>>, point:CavePoint,mut visited : Vec<CavePoint>) -> usize {
+fn recursive_search(paths:&HashMap<CavePoint,Vec<CavePoint>>, point:CavePoint,visited : Vec<CavePoint>) -> usize {
     paths[&point].iter().filter_map(|test| {
         // println!("branch {:?}",test);
+        let mut visited = visited.clone();
         match test {
             CavePoint::Big(_) => {
                 visited.push(test.clone());
-                Some(recursive_search(paths, test.clone(), visited.clone()))
+                Some(recursive_search(paths, test.clone(), visited))
             }
             CavePoint::Small(_) => {
                 if !visited.contains(test) {
                     visited.push(test.clone());
-                    Some(recursive_search(paths, test.clone(), visited.clone()))
+                    Some(recursive_search(paths, test.clone(), visited))
                 } else {
                     // println!("Dead end {:?}",visited);
                     None
                 }
             }
             CavePoint::End =>{ 
-                println!("End : {:?}",visited);
                 Some(1) 
             },
             CavePoint::Start => {
@@ -72,9 +72,58 @@ fn recursive_search(paths:&HashMap<CavePoint,Vec<CavePoint>>, point:CavePoint,mu
 fn part1(cave : &Cave) -> usize {
     cave.paths[&CavePoint::Start].iter().map(|point| {
         // println!("start\n{:?}",point);
-        let visited = vec![CavePoint::Start];
+        let visited = vec![CavePoint::Start,point.clone()];
         recursive_search(&cave.paths, point.clone(), visited)
     }).sum()
+}
+
+fn recursive_search_v2(paths:&HashMap<CavePoint,Vec<CavePoint>>, point:CavePoint,visited : Vec<CavePoint>, small_used:bool)-> usize {
+    paths[&point].iter().filter_map(|test| {
+        // println!("branch {:?}",test);
+        let mut visited = visited.clone();
+        match test {
+            CavePoint::Big(_) => {
+                visited.push(test.clone());
+                Some(recursive_search_v2(paths, test.clone(), visited,small_used))
+            }
+            CavePoint::Small(_) if small_used => {
+                if !visited.contains(test) {
+                    visited.push(test.clone());
+                    Some(recursive_search_v2(paths, test.clone(), visited,true))
+                } else {
+                    // println!("Dead end {:?}",visited);
+                    None
+                }
+            }
+            CavePoint::Small(_)=> {
+                let dupe = visited.contains(test);
+                visited.push(test.clone());
+                Some(recursive_search_v2(paths, test.clone(), visited, dupe))
+            }
+            CavePoint::End =>{ 
+                Some(1) 
+            },
+            CavePoint::Start => {
+                // println!("Dead end {:?}",visited);
+                None
+            }
+        }
+    }).sum()
+}
+
+fn part2(cave : &Cave) -> usize {
+    cave.paths[&CavePoint::Start].iter().map(|point| {
+        // println!("start\n{:?}",point);
+        let visited = vec![CavePoint::Start,point.clone()];
+        recursive_search_v2(&cave.paths, point.clone(), visited,false)
+    }).sum()
+}
+
+pub fn run() {
+    println!("day 12:");
+    let cave = parse(include_str!("input.txt"));
+    println!("part 1: {}", part1(&cave));
+    println!("part 2: {}", part2(&cave))
 }
 
 #[cfg(test)]
@@ -145,7 +194,15 @@ start-RW";
 
     #[test]
     fn part1() {
-        assert_eq!(10,super::part1(&super::parse(TEST_DATA_SMALL)));
-        // assert_eq!(19,super::part1(&super::parse(TEST_DATA_MED)));
+        assert_eq!(10, super::part1(&super::parse(TEST_DATA_SMALL)));
+        assert_eq!(19, super::part1(&super::parse(TEST_DATA_MED)));
+        assert_eq!(226,super::part1(&super::parse(TEST_DATA_LARGE)));
+    }
+
+    #[test]
+    fn part2() {
+        assert_eq!(36,  super::part2(&super::parse(TEST_DATA_SMALL)));
+        assert_eq!(103, super::part2(&super::parse(TEST_DATA_MED)));
+        assert_eq!(3509,super::part2(&super::parse(TEST_DATA_LARGE)));
     }
 }
